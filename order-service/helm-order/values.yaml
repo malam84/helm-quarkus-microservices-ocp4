@@ -1,0 +1,134 @@
+# Default values for helm-order.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  name: order-service
+  pullPolicy: Always
+  tag: latest
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+build:
+  enabled: true
+  uri: https://github.com/malam84/helm-quarkus-microservices-ocp4.git
+  ref: main
+  contextDir: /order-service
+  mode: jvm
+  jvm:
+    imageStreamTag: 
+      name: java:openjdk-11-el7
+      useReleaseNamespace: false
+      namespace: openshift
+  output:
+    kind: ImageStreamTag
+    pushSecret:
+  resources:
+    limits:
+      cpu: "4"
+      memory: 6Gi
+    requests:
+      cpu: "2"
+      memory: 4Gi
+
+deploy:
+  replicas: 1
+  resources:
+    limits:
+      cpu: 100m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+  serviceType: ClusterIP
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+  route:
+    enabled: true
+    targetPort: http
+    tls:
+      enabled: false
+      termination: edge
+      insecureEdgeTerminationPolicy: Redirect
+      ## IMPORTANT: Do not check 'key' into git!
+      key:
+      caCertificate:
+      certificate:
+      destinationCACertificate:
+  livenessProbe:
+    tcpSocket:
+      port: http
+  readinessProbe:
+    httpGet:
+      path: /
+      port: http
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

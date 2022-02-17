@@ -1,0 +1,29 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata: 
+  name: {{ include "helm-order.name" . }}
+  labels: 
+    {{- include "helm-order.labels" . | nindent 4 }}
+spec:
+  output: 
+    to: 
+      kind: {{ .Values.build.output.kind }}
+      name: {{ include "helm-order.imageName" . }}
+  source:
+    type: Git
+    git:
+      uri: {{ .Values.build.uri }}
+      ref: {{ .Values.build.ref }}
+    contextDir: {{ .Values.build.contextDir }}
+  strategy:
+    type: Source
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: {{ .Values.build.jvm.imageStreamTag.name }}
+        namespace: {{ .Values.build.jvm.imageStreamTag.namespace }}
+  triggers:
+    - type: ConfigChange
+
+
+

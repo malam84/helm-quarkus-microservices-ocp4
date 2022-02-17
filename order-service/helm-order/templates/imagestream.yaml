@@ -1,0 +1,11 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: {{ include "helm-order.name" . }}
+  labels:
+    {{- include "helm-order.labels" . | nindent 4 }}
+spec:
+  lookupPolicy:
+    local: true
+
+
